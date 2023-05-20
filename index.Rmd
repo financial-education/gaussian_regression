@@ -1,0 +1,69 @@
+---
+title: Gaussian Processes
+author: 
+date: 
+output: html_document
+---
+
+```{r}
+library(devtools)
+library(GauPro)
+
+install_github("Matt-Brigida/EIAdata", ref = "v2_fix")
+
+library(EIAdata)
+
+key <- source("~/eia_key")$value
+
+weekly_ng <- getEIA("NG.RNGC1.W", key=key)
+weekly_cl <- getEIA("PET.RCLC1.W", key=key)
+
+data <- merge.xts(weekly_ng, weekly_cl, join="inner")
+data
+## write to csv to also test in python-------
+write.zoo(data, "./ng_cl_data.csv", sep=",")
+```
+
+```{r}
+ng <- as.numeric(data$NG.RNGC1.W)
+lng <- log(as.numeric(data$NG.RNGC1.W))
+cl <- as.numeric(data$PET.RCLC1.W)
+lcl <- log(as.numeric(data$PET.RCLC1.W))
+
+plot(cl, ng)
+# plot(lcl, lng)
+```
+
+## see vignettes here: https://cran.r-project.org/package=GauPro
+
+## levels------
+
+gp <- GauPro(as.numeric(data$NG.RNGC1.W), as.numeric(data$PET.RCLC1.W), parallel=FALSE)
+
+gp$predict(5.33)
+gp$predict(3.33)
+gp$predict(2.33)
+gp$predict(1.33)
+
+plot(gp)
+
+## try exponential kernel-----
+kern.exp <- Exponential$new(0)
+gpk.exp <- GauPro_kernel_model$new(matrix(as.numeric(data$NG.RNGC1.W), ncol=1), as.numeric(data$PET.RCLC1.W), kernel=kern.exp, parallel=FALSE)
+plot(gpk.exp)
+
+gpk.exp$predict(2.33)
+
+
+
+## logs------
+
+gpl <- GauPro(lcl, lng, parallel=FALSE)
+plot(gpl)
+
+gpl$predict(5.33)
+
+
+kern.exp <- Exponential$new(0)
+gpk.exp <- GauPro_kernel_model$new(matrix(lcl, ncol=1), lng, kernel=kern.exp, parallel=FALSE)
+plot(gpk.exp)
