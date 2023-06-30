@@ -5,18 +5,22 @@ date:
 output:
   rmdformats::downcute:
     self_contained: true
-    thumbnails: true
+    thumbnails: false
     lightbox: true
     gallery: false
     highlight: tango
 ---
 
+We'll first estimate a Gaussian regression using the `GauPro` package in R on a CPU, then using `scikit-learn` in Python on a CPU, and finally estimate the same regression on a GPU in Python using `GPJax` from the `Jax` machine learning framework.
+
+
+Getting started with Gaussian Processes in easier in R which is why we'll look at an implementation in that language first. See the [GauPro vignettes here](https://cran.r-project.org/package=GauPro).
 
 ## Data 
 
-We'll pull crude oil and natural gas data from the EIA's API.
+We'll pull crude oil and natural gas data from the EIA's API using my R package updated for EIA's v2 API.
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 library(devtools)
 library(GauPro)
 
@@ -27,12 +31,13 @@ library(EIAdata)
 key <- source("~/eia_key")$value
 
 weekly_ng <- getEIA("NG.RNGC1.W", key=key)
+Sys.sleep(10)
 weekly_cl <- getEIA("PET.RCLC1.W", key=key)
 
 data <- merge.xts(weekly_ng, weekly_cl, join="inner")
 data
 ## write to csv to also test in python-------
-write.zoo(data, "./ng_cl_data.csv", sep=",")
+# write.zoo(data, "./ng_cl_data.csv", sep=",")
 ```
 
 We'll convert the data into logs and plot:
@@ -48,7 +53,7 @@ lcl <- log(as.numeric(data_post_2000$PET.RCLC1.W))
 plot(lcl, lng)
 ```
 
-<!--- see vignettes here: https://cran.r-project.org/package=GauPro -->
+## GauPro in R
 
 <!---
 ## levels------
@@ -112,3 +117,8 @@ gpk.exp$predict(3.)
 ```{r}
 gpk.exp$predict(4.)
 ```
+
+
+## Scikit-Learn in Python
+
+[Here is a good tutorial](https://scikit-learn.org/stable/auto_examples/gaussian_process/plot_compare_gpr_krr.html)
