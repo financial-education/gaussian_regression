@@ -20,10 +20,14 @@ Getting started with Gaussian Processes in easier in R which is why we'll look a
 
 We'll pull crude oil and natural gas data from the EIA's API using my R package updated for EIA's v2 API.
 
-```{r eval=TRUE}
+```{r}
 library(devtools)
 library(GauPro)
+library(xts)
+```
 
+
+```{r eval=FALSE, message=FALSE}
 install_github("Matt-Brigida/EIAdata", ref = "v2_fix")
 
 library(EIAdata)
@@ -38,6 +42,11 @@ data <- merge.xts(weekly_ng, weekly_cl, join="inner")
 data
 ## write to csv to also test in python-------
 # write.zoo(data, "./ng_cl_data.csv", sep=",")
+```
+
+```{r eval=TRUE, message=FALSE}
+data <- read.csv("ng_cl_data.csv")
+data <- as.xts(data, order.by=as.Date(data$Index))[, c(2,3)]
 ```
 
 We'll convert the data into logs and plot:
@@ -122,3 +131,10 @@ gpk.exp$predict(4.)
 ## Scikit-Learn in Python
 
 [Here is a good tutorial](https://scikit-learn.org/stable/auto_examples/gaussian_process/plot_compare_gpr_krr.html)
+
+```{python}
+import pandas as pd
+pd.read_csv("ng_cl_data.csv")
+```
+
+## Pyro
