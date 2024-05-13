@@ -11,8 +11,9 @@ output:
     highlight: tango
 ---
 
-We'll first estimate a Gaussian regression using the `GauPro` package in R on a CPU, then using `scikit-learn` in Python on a CPU, and finally estimate the same regression on a GPU in Python using `GPJax` from the `Jax` machine learning framework.
+Bayesian Machine Learning methods have become very popular recently. The methods lend themselves to updating predictions given new data (which often now some in nearly continuous streams), and they provide distributions of the prediction. In finance, gaussian processes are commonly used in fitting the term structure as well as trading strategies.  [See this paper for background](https://arxiv.org/abs/1903.04841).
 
+We'll first estimate a Gaussian regression using the `GauPro` package in R on a CPU, then using `scikit-learn` in Python on a CPU, and finally estimate the same regression on a GPU in Python using `GPJax` from the `Jax` machine learning framework.
 
 Getting started with Gaussian Processes in easier in R which is why we'll look at an implementation in that language first. See the [GauPro vignettes here](https://cran.r-project.org/package=GauPro).
 
@@ -104,27 +105,27 @@ gpl$predict(2., se=TRUE)
 ```
 
 ```{r}
-gpl$predict(3.)
+gpl$predict(3., se=TRUE)
 ```
 ```{r}
-gpl$predict(4.)
+gpl$predict(4., se=TRUE)
 ```
 
 ```{r}
 kern.exp <- Exponential$new(0)
 gpk.exp <- GauPro_kernel_model$new(matrix(lcl, ncol=1), lng, kernel=kern.exp, parallel=FALSE)
 plot(gpk.exp)
-
+```
 
 
 ```{r}
-gpk.exp$predict(2.)
+gpk.exp$predict(2., se=TRUE)
 ```
 ```{r}
-gpk.exp$predict(3.)
+gpk.exp$predict(3., se=TRUE)
 ```
 ```{r}
-gpk.exp$predict(4.)
+gpk.exp$predict(4., se=TRUE)
 ```
 
 
@@ -132,9 +133,27 @@ gpk.exp$predict(4.)
 
 [Here is a good tutorial](https://scikit-learn.org/stable/auto_examples/gaussian_process/plot_compare_gpr_krr.html)
 
-```{python}
+```{python eval=FALSE}
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import WhiteKernel
 import pandas as pd
-pd.read_csv("ng_cl_data.csv")
 ```
+
+```{python eval=FALSE}
+data = pd.read_csv("ng_cl_data.csv")
+data
+```
+
+```{python eval=FALSE}
+kernel = 1.0 * ExpSineSquared(1.0, 5.0) + WhiteKernel(1e-1)
+gaussian_process = GaussianProcessRegressor(kernel=kernel)
+start_time = time.time()
+gaussian_process.fit(training_data, training_noisy_target)
+print(
+    f"Time for GaussianProcessRegressor fitting: {time.time() - start_time:.3f} seconds"
+)
+
+```
+
 
 ## Pyro
